@@ -8,7 +8,7 @@ Driver support whole FM25xxxxx device family if correctly configurable. Driver i
 
 ## **Driver Configuration**
 
-Based provided table configuration of the module can be make:
+Based on following table, configuration of the driver shall be made:
 ![](pic/../doc/pic/device_family_table.png)
 
 
