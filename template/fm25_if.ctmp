@@ -61,7 +61,10 @@ fm25_status_t fm25_if_init(void)
 
 	// USER CODE BEGIN...
 
-	// Left empty as periphery is initilize elswhere...
+	if ( eSPI_OK != spi_init())
+	{
+		status = eFM25_ERROR_INIT;
+	}
 
 	// USER CODE END...
 
@@ -127,4 +130,3 @@ fm25_status_t fm25_if_receive(uint8_t * p_data, const uint32_t size, const spi_c
 * @} <!-- END GROUP -->
 */
 ////////////////////////////////////////////////////////////////////////////////
-

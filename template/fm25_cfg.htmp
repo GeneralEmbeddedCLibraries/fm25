@@ -54,7 +54,7 @@
  * 	Device number address bits
  *
  */
-#define FM25_CFG_ADDR_BIT_NUM			( 10 )
+#define FM25_CFG_ADDR_BIT_NUM			( 9 )
 
 
 

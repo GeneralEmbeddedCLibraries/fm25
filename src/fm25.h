@@ -53,7 +53,6 @@ typedef enum
 // Functions Prototypes
 ////////////////////////////////////////////////////////////////////////////////
 fm25_status_t fm25_init				(void);
-fm25_status_t fm25_deinit			(void);
 fm25_status_t fm25_is_init			(bool * const p_is_init);
 fm25_status_t fm25_write			(const uint32_t addr, const uint32_t size, const uint8_t * const p_data);
 fm25_status_t fm25_erase			(const uint32_t addr, const uint32_t size);

@@ -35,8 +35,8 @@
 typedef enum
 {
 	eFM25_ISA_WREN		= 0x06U,		/**<Set write enable latch - enable write operation */
-	eFM25_ISA_WRITE		= 0x02U,		/**<Write data to memory array begging at selected address */
-	eFM25_ISA_READ		= 0x03U,		/**<Read data from memory array begging at selected address */
+	eFM25_ISA_WRITE		= 0x02U,		/**<Write data to memory array beginning at selected address */
+	eFM25_ISA_READ		= 0x03U,		/**<Read data from memory array beginning at selected address */
 	eFM25_ISA_WRDI		= 0x04U,		/**<Reset write enable latch - disable write operation */
 	eFM25_ISA_RDSR		= 0x05U,		/**<Read STATUS register */
 	eFM25_ISA_WRSR		= 0x01U,		/**<Write STATUS register */
@@ -54,7 +54,7 @@ typedef enum
 typedef struct
 {
 	uint8_t res_0 	: 1;	/**<Reserved */
-	uint8_t wel 	: 1; 	/**<Write Enable Lactch */
+	uint8_t wel 	: 1; 	/**<Write Enable Latch */
 	uint8_t bp		: 2;	/**<Block protection */
 	uint8_t	res_1 	: 3;	/**<Reserved */
 	uint8_t wpen	: 1;	/**<Write Protect enable */

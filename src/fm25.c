@@ -11,10 +11,10 @@
 */
 ////////////////////////////////////////////////////////////////////////////////
 /**
-*@addtogroup _25LCXXXX_API
+*@addtogroup FM25_API
 * @{ <!-- BEGIN GROUP -->
 *
-* 	API functions for EEPROM device
+* 	API functions for FRAM device FM25
 */
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -81,7 +81,7 @@ static bool				fm25_read_wel_flag				(void);
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-*		Initialize EEPROM device
+*		Initialize FRAM device
 *
 * @return 	status - Status of initialization
 */
@@ -109,47 +109,14 @@ fm25_status_t fm25_init(void)
 			&& 	( true == wel_flag ))
 		{
 			gb_is_init = true;
+
+			FM25_DBG_PRINT("Init success!");
 		}
 		else
 		{
 			status = eFM25_ERROR_INIT;
-		}
-	}
 
-	return status;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/**
-*		De-Initialize EEPROM device
-*
-* @return 	status - Status of deinitialization
-*/
-////////////////////////////////////////////////////////////////////////////////
-fm25_status_t fm25_deinit(void)
-{
-	fm25_status_t 		status 		= eFM25_OK;
-	fm25_status_reg_t	stat_reg	= { .u = 0 };
-
-	// Check for init
-	FM25_ASSERT( true == gb_is_init );
-
-	if ( true == gb_is_init )
-	{
-		// Disable write latch
-		status |= fm25_write_disable();
-
-		// Verify enable write latch
-		status |= fm25_read_status( &stat_reg );
-
-		if (	( eFM25_OK == status )
-			&& 	( false == stat_reg.b.wel ))
-		{
-			gb_is_init = false;
-		}
-		else
-		{
-			status = eFM25_ERROR_INIT;
+			FM25_DBG_PRINT("Init error!");
 		}
 	}
 
@@ -178,8 +145,7 @@ fm25_status_t fm25_is_init(bool * const p_is_init)
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-*		Write byte(s) to EEPROM
-*
+*		Write byte(s) to FRAM
 *
 * @param[in]	addr	- Start address of write
 * @param[in]	size	- Size of bytes to write
@@ -212,10 +178,10 @@ fm25_status_t fm25_write(const uint32_t addr, const uint32_t size, const uint8_t
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-*		Erase byte(s) from EEPROM
+*		Erase byte(s) from FRAM
 *
-* @brief	This function erase number of bytes from eeprom device starting
-* 			from addr parameter. Erase value is defined by "_25LCXXX_ERASE_VALUE"
+* @brief	This function erase number of bytes from FRAM device starting
+* 			from addr parameter. Erase value is defined by "FM25_ERASE_VALUE"
 * 			macro.
 *
 *
@@ -227,17 +193,18 @@ fm25_status_t fm25_write(const uint32_t addr, const uint32_t size, const uint8_t
 fm25_status_t fm25_erase(const uint32_t addr, const uint32_t size)
 {
 	fm25_status_t 	status		 	= eFM25_OK;
-	uint8_t			erase_data[32] 	= { 0 };
+	uint8_t			erase_data[64] 	= { 0 };
 
 	FM25_ASSERT( true == gb_is_init );
-	FM25_ASSERT( size < 32 );
+	FM25_ASSERT( size < 64 );
 
+	// Check for init
 	if ( true == gb_is_init )
 	{
-		if ( size < 32 )
+		if ( size < 64 )
 		{
 			// Prepare erase data
-			for ( uint8_t i = 0; i < 32; i++ )
+			for ( uint8_t i = 0; i < 64; i++ )
 			{
 				erase_data[i] = FM25_ERASE_VALUE;
 			}
@@ -260,7 +227,7 @@ fm25_status_t fm25_erase(const uint32_t addr, const uint32_t size)
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-*		Read byte(s) from EEPROM
+*		Read byte(s) from FRAM
 *
 * @param[in]	addr	- Start address of write
 * @param[in]	size	- Size of bytes to write
@@ -315,7 +282,7 @@ fm25_status_t fm25_read(const uint32_t addr, const uint32_t size, uint8_t * cons
 *@addtogroup KERNEL_FUNCTIONS
 * @{ <!-- BEGIN GROUP -->
 *
-* 	Kernel functions of SPI EEPROM device 25LCxxxx/25AAxxxx
+* 	Kernel functions of SPI FRAM device FM25 family
 */
 ////////////////////////////////////////////////////////////////////////////////
 
