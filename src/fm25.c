@@ -33,7 +33,7 @@
 /**
  *  Highest memory address
  */
-#define FM25_MAX_ADDR						((uint32_t) (( 1UL << FM25_CFG_ADDR_BIT_NUM ) - 1UL ))
+#define FM25_MAX_ADDR					((uint32_t) (( 1UL << FM25_CFG_ADDR_BIT_NUM ) - 1UL ))
 
 
 /**
@@ -67,17 +67,13 @@ static bool gb_is_init = false;
 // Function Prototypes
 ////////////////////////////////////////////////////////////////////////////////
 static fm25_status_t 	fm25_write_enable 				(void);
-static fm25_status_t 	fm25_write_disable 			(void);
+static fm25_status_t 	fm25_write_disable 				(void);
 static fm25_status_t 	fm25_read_status				(fm25_status_reg_t * const p_status_reg);
 static fm25_status_t 	fm25_write_status				(const fm25_status_reg_t * const p_status_reg);
 static fm25_status_t 	fm25_read_command				(const uint32_t addr);
 static fm25_status_t 	fm25_write_command				(const uint32_t addr);
-static void 				fm25_assemble_rw_cmd			(fm25_rw_cmd_t * const p_frame, const fm25_isa_t rw_cmd, const uint32_t addr);
-static uint32_t 			fm25_calc_num_of_sectors		(const uint32_t addr, const uint32_t size);
-static uint32_t 			fm25_calc_transfer_size		(const uint32_t addr, const uint32_t size);
-static bool					fm25_read_wip_flag				(void);
-static bool					fm25_read_wel_flag				(void);
-static fm25_status_t	fm25_wait_for_write_process	(const uint32_t timeout);
+static void 			fm25_assemble_rw_cmd			(fm25_rw_cmd_t * const p_frame, const fm25_isa_t rw_cmd, const uint32_t addr);
+static bool				fm25_read_wel_flag				(void);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Functions
@@ -130,7 +126,7 @@ fm25_status_t fm25_init(void)
 * @return 	status - Status of deinitialization
 */
 ////////////////////////////////////////////////////////////////////////////////
-fm25_status_t fm25_deinit	(void)
+fm25_status_t fm25_deinit(void)
 {
 	fm25_status_t 		status 		= eFM25_OK;
 	fm25_status_reg_t	stat_reg	= { .u = 0 };
@@ -146,7 +142,7 @@ fm25_status_t fm25_deinit	(void)
 		// Verify enable write latch
 		status |= fm25_read_status( &stat_reg );
 
-		if (	( e25LCXXXX_OK == status )
+		if (	( eFM25_OK == status )
 			&& 	( false == stat_reg.b.wel ))
 		{
 			gb_is_init = false;
@@ -184,7 +180,6 @@ fm25_status_t fm25_is_init(bool * const p_is_init)
 /**
 *		Write byte(s) to EEPROM
 *
-* @note		Need to be check for page boundary unless it wrap around!
 *
 * @param[in]	addr	- Start address of write
 * @param[in]	size	- Size of bytes to write
@@ -194,49 +189,23 @@ fm25_status_t fm25_is_init(bool * const p_is_init)
 ////////////////////////////////////////////////////////////////////////////////
 fm25_status_t fm25_write(const uint32_t addr, const uint32_t size, const uint8_t * const p_data)
 {
-	fm25_status_t 		status				= e25LCXXXX_OK;
-	uint32_t				working_addr		= addr;
-	uint32_t				working_size		= size;
-	uint32_t				bytes_to_transfer	= 0UL;
-	uint32_t				data_offset			= 0UL;
+	fm25_status_t status = eFM25_OK;
 
 	// Check for init
 	FM25_ASSERT( true == gb_is_init );
 
-	// Invalid inputs
-	FM25_ASSERT( size > 0 );
-	FM25_ASSERT(( addr + size - 1 ) <= fm25_MAX_ADDR );
-
-	// Calculate how many sectors takes write request
-	const uint32_t num_of_sectors = fm25_calc_num_of_sectors( addr, size );
-
-	// Write to all sectors
-	for (uint32_t i = 0; i < num_of_sectors; i++ )
+	if ( true == gb_is_init )
 	{
-		// Calculate bytes to transfer till end of page
-		bytes_to_transfer = fm25_calc_transfer_size( working_addr, working_size );
-
 		// Send write command
-		status = fm25_write_command( working_addr );
+		status = fm25_write_command( addr );
 
-		if ( e25LCXXXX_OK == status )
-		{
-			// Send data payload
-			status = fm25_if_transmit( ( p_data + data_offset ), bytes_to_transfer, eSPI_CS_HIGH_ON_EXIT );
-
-			// Increment address & written data offset
-			data_offset += bytes_to_transfer;
-			working_addr += bytes_to_transfer;
-			working_size -= bytes_to_transfer;
-		}
-		else
-		{
-			break;
-		}
+		// Send data payload
+		status = fm25_if_transmit( p_data, size, eSPI_CS_HIGH_ON_EXIT );
 	}
-
-	// All bytes shall be transfered
-	FM25_ASSERT( 0UL == working_size );
+	else
+	{
+		status = eFM25_ERROR_INIT;
+	}
 
 	return status;
 }
@@ -257,20 +226,34 @@ fm25_status_t fm25_write(const uint32_t addr, const uint32_t size, const uint8_t
 ////////////////////////////////////////////////////////////////////////////////
 fm25_status_t fm25_erase(const uint32_t addr, const uint32_t size)
 {
-	fm25_status_t 	status		 	= e25LCXXXX_OK;
-	uint8_t				erase_data[32] 	= { 0 };
+	fm25_status_t 	status		 	= eFM25_OK;
+	uint8_t			erase_data[32] 	= { 0 };
 
 	FM25_ASSERT( true == gb_is_init );
 	FM25_ASSERT( size < 32 );
 
-	// Prepare erase data
-	for ( uint8_t i = 0; i < 32; i++ )
+	if ( true == gb_is_init )
 	{
-		erase_data[i] = _25LCXXX_ERASE_VALUE;
-	}
+		if ( size < 32 )
+		{
+			// Prepare erase data
+			for ( uint8_t i = 0; i < 32; i++ )
+			{
+				erase_data[i] = FM25_ERASE_VALUE;
+			}
 
-	// Erase memory
-	status = fm25_write( addr, size, (uint8_t*) erase_data );
+			// Erase memory
+			status = fm25_write( addr, size, (uint8_t*) erase_data );
+		}
+		else
+		{
+			status = eFM25_ERROR;
+		}
+	}
+	else
+	{
+		status = eFM25_ERROR_INIT;
+	}
 
 	return status;
 }
@@ -287,62 +270,36 @@ fm25_status_t fm25_erase(const uint32_t addr, const uint32_t size)
 ////////////////////////////////////////////////////////////////////////////////
 fm25_status_t fm25_read(const uint32_t addr, const uint32_t size, uint8_t * const p_data)
 {
-	fm25_status_t 	status 		= e25LCXXXX_OK;
-	bool				wip_flag	= true;
+	fm25_status_t status = eFM25_OK;
 
 	// Check for init
 	FM25_ASSERT( true == gb_is_init );
 
 	// Invalid inputs
 	FM25_ASSERT( size > 0 );
-	FM25_ASSERT(( addr + size - 1 ) <= fm25_MAX_ADDR );
+	FM25_ASSERT(( addr + size - 1 ) <= FM25_MAX_ADDR );
 
-	// Get WIP flag
-	// NOTE: Reading not possible when write in progress!
-	wip_flag = fm25_read_wip_flag();
-
-	// Check if write in progress
-	if ( false == wip_flag )
+	if ( true == gb_is_init )
 	{
-		// Send read command
-		status = fm25_read_command( addr );
+		if 	(	( size > 0)
+			&& 	( ( addr + size - 1 ) <= FM25_MAX_ADDR ))
+		{
+			// Send read command
+			status = fm25_read_command( addr );
 
-		// Send data payload
-		status |= fm25_if_receive( p_data, size, eSPI_CS_HIGH_ON_EXIT );
+			// Send data payload
+			status |= fm25_if_receive( p_data, size, eSPI_CS_HIGH_ON_EXIT );
+
+		}
+		else
+		{
+			status = eFM25_ERROR;
+		}
 	}
 	else
 	{
-		status = e25LCXXXX_ERROR;
+		status = eFM25_ERROR_INIT;
 	}
-
-	return status;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/**
-*		Set protection
-*
-* @pre	Chip WP pin must be set to low (0V) in order for protection to be
-* 		enabled in first place. If that condition is not fullfiled device
-* 		will not be write protected.
-*
-* @param[in]	prot_opt	- Protection options
-* @return 		status 		- Status of operation
-*/
-////////////////////////////////////////////////////////////////////////////////
-fm25_status_t fm25_set_protection(const fm25_protect_t prot_opt)
-{
-	fm25_status_t 		status 		= e25LCXXXX_OK;
-	fm25_status_reg_t	stat_reg	= { .u = 0 };
-
-	// Check for init
-	FM25_ASSERT( true == gb_is_init );
-
-	// Set protection level
-	stat_reg.b.bp = prot_opt;
-
-	// Write to device
-	status = fm25_write_status( &stat_reg );
 
 	return status;
 }
@@ -371,8 +328,8 @@ fm25_status_t fm25_set_protection(const fm25_protect_t prot_opt)
 ////////////////////////////////////////////////////////////////////////////////
 static fm25_status_t fm25_write_enable(void)
 {
-	fm25_status_t 		status 	= e25LCXXXX_OK;
-	const fm25_isa_t	cmd		= e25LCXXXX_ISA_WREN;
+	fm25_status_t 		status 	= eFM25_OK;
+	const fm25_isa_t	cmd		= eFM25_ISA_WREN;
 
 	status = fm25_if_transmit( &cmd, 1, ( eSPI_CS_HIGH_ON_EXIT | eSPI_CS_LOW_ON_ENTRY ));
 
@@ -388,8 +345,8 @@ static fm25_status_t fm25_write_enable(void)
 ////////////////////////////////////////////////////////////////////////////////
 static fm25_status_t fm25_write_disable(void)
 {
-	fm25_status_t 	status 	= e25LCXXXX_OK;
-	const fm25_isa_t		cmd		= e25LCXXXX_ISA_WRDI;
+	fm25_status_t 		status 	= eFM25_OK;
+	const fm25_isa_t	cmd		= eFM25_ISA_WRDI;
 
 	status = fm25_if_transmit( &cmd, 1, ( eSPI_CS_HIGH_ON_EXIT | eSPI_CS_LOW_ON_ENTRY ));
 
@@ -406,8 +363,8 @@ static fm25_status_t fm25_write_disable(void)
 ////////////////////////////////////////////////////////////////////////////////
 static fm25_status_t fm25_read_status(fm25_status_reg_t * const p_status_reg)
 {
-	fm25_status_t 	status 	= e25LCXXXX_OK;
-	const fm25_isa_t		cmd		= e25LCXXXX_ISA_RDST;
+	fm25_status_t 		status 	= eFM25_OK;
+	const fm25_isa_t	cmd		= eFM25_ISA_RDSR;
 
 	status = fm25_if_transmit( &cmd, 1, eSPI_CS_LOW_ON_ENTRY );
 	status |= fm25_if_receive((uint8_t*) p_status_reg, 1, eSPI_CS_HIGH_ON_EXIT );
@@ -425,8 +382,8 @@ static fm25_status_t fm25_read_status(fm25_status_reg_t * const p_status_reg)
 ////////////////////////////////////////////////////////////////////////////////
 static fm25_status_t fm25_write_status(const fm25_status_reg_t * const p_status_reg)
 {
-	fm25_status_t 		status 	= e25LCXXXX_OK;
-	const fm25_isa_t	cmd		= e25LCXXXX_ISA_WDST;
+	fm25_status_t 		status 	= eFM25_OK;
+	const fm25_isa_t	cmd		= eFM25_ISA_WRSR;
 
 	status = fm25_if_transmit( &cmd, 1, eSPI_CS_LOW_ON_ENTRY );
 	status |= fm25_if_transmit((uint8_t*) p_status_reg, 1, eSPI_CS_HIGH_ON_EXIT );
@@ -436,74 +393,14 @@ static fm25_status_t fm25_write_status(const fm25_status_reg_t * const p_status_
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-*		Calculate number of sectors
-*
-*	This function calculates how many pages consumes area with a
-*	start of address and with a size of size argument. It is being
-*	used in write function.
-*
-* @param[in]	addr		- Start address of area
-* @param[in]	size		- Size of area
-* @return 		sector_num	- Number of sectors in that area
-*/
-////////////////////////////////////////////////////////////////////////////////
-static uint32_t fm25_calc_num_of_sectors(const uint32_t addr, const uint32_t size)
-{
-	uint32_t sector_num = 0UL;
-	uint32_t k_a 		= 0UL;
-	uint32_t k_s		= 0UL;
-
-	// Calculate address & size factors of sector size
-	k_a = (uint32_t) ( addr / fm25_CFG_PAGE_SIZE_BYTE );
-	k_s = (uint32_t) (( addr + size - 1UL ) / fm25_CFG_PAGE_SIZE_BYTE );
-
-	// Based on address & size factors number of sectors can be calculated
-	sector_num = ( k_s - k_a ) + 1UL;
-
-	return sector_num;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/**
-*		Calculate transfer size of data in bytes
-*
-*	This function caclulated based on address and size how many bytes are
-*	in current page. In other words what amount of bytes can be written until
-*	page boundary is hit. It is being used for write function.
-*
-* @param[in]	addr	- Start address
-* @param[in]	size	- Size of bytes
-* @return 		status 	- Status of operation
-*/
-////////////////////////////////////////////////////////////////////////////////
-static uint32_t fm25_calc_transfer_size(const uint32_t addr, const uint32_t size)
-{
-	uint32_t bytes_to_transfer 	= 0UL;
-	uint32_t bytes_in_sector 	= 0UL;
-
-	// Calculate how many bytes till page boundary
-	bytes_in_sector = fm25_CFG_PAGE_SIZE_BYTE - ( addr % fm25_CFG_PAGE_SIZE_BYTE );
-
-	// Bytes will not pass page boundary
-	if ( size <= bytes_in_sector )
-	{
-		bytes_to_transfer = size;
-	}
-
-	// Bytes will pass page boundary - limit to boundary
-	else
-	{
-		bytes_to_transfer = bytes_in_sector;
-	}
-
-	return bytes_to_transfer;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/**
 *		Assemble read/write command
 *
-* @note For know this function has been tested only on 25LC640 device!
+* @note 	For FM25L04 A8 bit of address is encoded into command part
+* 			of the frame.
+*
+* 			Look at the AN304 Document No. 001-87196 Rev. *E  p.7
+* 			figure 9. Addressing Differences Between Densities
+*
 *
 * @param[out]	p_frame		- Pointer to cmd frame
 * @param[in]	rw_cmd		- Device command for read or write
@@ -513,22 +410,45 @@ static uint32_t fm25_calc_transfer_size(const uint32_t addr, const uint32_t size
 ////////////////////////////////////////////////////////////////////////////////
 static void fm25_assemble_rw_cmd(fm25_rw_cmd_t * const p_frame, const fm25_isa_t rw_cmd, const uint32_t addr)
 {
-	fm25_ASSERT( NULL != p_frame );
+	FM25_ASSERT( NULL != p_frame );
 
 	p_frame->u 				= 0UL;
 	p_frame->field.cmd 		= rw_cmd;
 
-	#if ( fm25_CFG_ADDR_BIT_NUM < 10 )
-		p_frame->field.addr[0]	= ( addr 			& 0xFFU );
+	// 4kbit devices
+	// 9-bit addressing
+	#if ( 9 == FM25_CFG_ADDR_BIT_NUM )
+	{
+		// 9 bit address specialty
+		// NOTE: Address bit A8 is encoded into command part of the device
+		if (( addr & 0x100U ) == 0x100U )
+		{
+			p_frame->field.cmd |= ( 0x80U );
+		}
+		else
+		{
+			p_frame->field.cmd &= ~( 0x80U );
+		}
 
-	#elif ( fm25_CFG_ADDR_BIT_NUM < 16 )
+		p_frame->field.addr[0] = ( addr & 0xFFU );
+	}
+
+	// Devices from 16kbit to 512kbit
+	// 10-bit - 16-bit addressing
+	#elif ( FM25_CFG_ADDR_BIT_NUM < 16 )
+	{
 		p_frame->field.addr[0]	= (( addr >> 8U ) 	& 0xFFU );
 		p_frame->field.addr[1]	= ( addr 			& 0xFFU );
+	}
+
+	// Devices from 1Mbit to 4Mbit
+	// 17-bit - 19-bit addressing
 	#else
+	{
 		p_frame->field.addr[0]	= (( addr >> 16U ) 	& 0xFFU );
 		p_frame->field.addr[1]	= (( addr >> 8U ) 	& 0xFFU );
 		p_frame->field.addr[2]	= ( addr 			& 0xFFU );
-
+	}
 	#endif
 }
 
@@ -536,58 +456,43 @@ static void fm25_assemble_rw_cmd(fm25_rw_cmd_t * const p_frame, const fm25_isa_t
 /**
 *		Send write command to device
 *
-*	This function first check if writing to device is allowed by looking into
-*	Write-In-Progress (WIP) flag in status register. Only when this flag is
-*	cleared in less that "fm25_WAIT_WRITE_TIMEOUT_MS" command for
-*	write is being send.
-*
 * @param[in]	addr		- Start address of write transfer
 * @return 		status 		- Status of operation
 */
 ////////////////////////////////////////////////////////////////////////////////
 static fm25_status_t fm25_write_command(const uint32_t addr)
 {
-	fm25_status_t 	status 	= e25LCXXXX_OK;
+	fm25_status_t 	status 	= eFM25_OK;
 	fm25_rw_cmd_t	cmd		= { .u = 0 };
 
-	// Wait for previous write process
-	status = fm25_wait_for_write_process( fm25_WAIT_WRITE_TIMEOUT_MS );
+	// Enable write enable latch
+	fm25_write_enable();
 
-	if ( e25LCXXXX_OK == status )
+	// Assemble command
+	fm25_assemble_rw_cmd( &cmd, eFM25_ISA_WRITE, addr );
+
+	// 4kbit devices
+	// 9-bit addressing
+	// NOTE: Address bit A8 is encoded into command part of the device
+	#if ( 9 == FM25_CFG_ADDR_BIT_NUM )
 	{
-		// Enable write enable latch
-		fm25_write_enable();
-
-		// Assemble command
-		fm25_assemble_rw_cmd( &cmd, e25LCXXXX_ISA_WRITE, addr );
-
-		// Send command
-		// NOTE: Based on number of address bits command is being divided!
-		#if ( fm25_CFG_ADDR_BIT_NUM <= 8)
-			status = fm25_if_transmit((uint8_t*) &cmd.u, 2, eSPI_CS_LOW_ON_ENTRY );
-
-		#elif ( 9 == fm25_CFG_ADDR_BIT_NUM )
-
-			// 9 bit address specialty
-			if (( addr & 0x100U ) == 0x100U )
-			{
-				cmd.field.cmd |= ( 0x80U );
-			}
-			else
-			{
-				cmd.field.cmd &= ~( 0x80U );
-			}
-
-			status = fm25_if_transmit((uint8_t*) &cmd.u, 2, eSPI_CS_LOW_ON_ENTRY );
-
-		#elif ( fm25_CFG_ADDR_BIT_NUM <= 16 )
-			status = fm25_if_transmit((uint8_t*) &cmd.u, 3, eSPI_CS_LOW_ON_ENTRY );
-
-		#elif ( fm25_CFG_ADDR_BIT_NUM <= 24 )
-			status = fm25_if_transmit((uint8_t*) &cmd.u, 4, eSPI_CS_LOW_ON_ENTRY );
-
-		#endif
+		status = fm25_if_transmit((uint8_t*) &cmd.u, 2, eSPI_CS_LOW_ON_ENTRY );
 	}
+
+	// Devices from 16kbit to 512kbit
+	// 10-bit - 16-bit addressing
+	#elif ( FM25_CFG_ADDR_BIT_NUM < 16 )
+	{
+		status = fm25_if_transmit((uint8_t*) &cmd.u, 3, eSPI_CS_LOW_ON_ENTRY );
+	}
+
+	// Devices from 1Mbit to 4Mbit
+	// 17-bit - 19-bit addressing
+	#else
+	{
+		status = fm25_if_transmit((uint8_t*) &cmd.u, 4, eSPI_CS_LOW_ON_ENTRY );
+	}
+	#endif
 
 	return status;
 }
@@ -596,69 +501,42 @@ static fm25_status_t fm25_write_command(const uint32_t addr)
 /**
 *		Send read command to device
 *
-* 	@note	Before reading from device it is important to check for
-* 			Write-In-Progress (WIP) flag in status register.
-*
 * @param[in]	addr		- Start address of write transfer
 * @return 		status 		- Status of operation
 */
 ////////////////////////////////////////////////////////////////////////////////
 static fm25_status_t fm25_read_command(const uint32_t addr)
 {
-	fm25_status_t 		status 	= e25LCXXXX_OK;
+	fm25_status_t 		status 	= eFM25_OK;
 	fm25_rw_cmd_t		cmd		= { .u = 0 };
 
 	// Assemble command
-	fm25_assemble_rw_cmd( &cmd, e25LCXXXX_ISA_READ, addr );
+	fm25_assemble_rw_cmd( &cmd, eFM25_ISA_READ, addr );
 
-	// Send command
-	// NOTE: Based on number of address bits command is being divided!
-	#if ( fm25_CFG_ADDR_BIT_NUM <= 8)
+	// 4kbit devices
+	// 9-bit addressing
+	// NOTE: Address bit A8 is encoded into command part of the device
+	#if ( 9 == FM25_CFG_ADDR_BIT_NUM )
+	{
 		status = fm25_if_transmit((uint8_t*) &cmd.u, 2, eSPI_CS_LOW_ON_ENTRY );
+	}
 
-	#elif ( 9 == fm25_CFG_ADDR_BIT_NUM )
-
-		// 9 bit address specialty
-		if (( addr & 0x100U ) == 0x100U )
-		{
-			cmd.field.cmd |= ( 0x80U );
-		}
-		else
-		{
-			cmd.field.cmd &= ~( 0x80U );
-		}
-
-		status = fm25_if_transmit((uint8_t*) &cmd.u, 2, eSPI_CS_LOW_ON_ENTRY );
-
-	#elif ( fm25_CFG_ADDR_BIT_NUM <= 16 )
+	// Devices from 16kbit to 512kbit
+	// 10-bit - 16-bit addressing
+	#elif ( FM25_CFG_ADDR_BIT_NUM < 16 )
+	{
 		status = fm25_if_transmit((uint8_t*) &cmd.u, 3, eSPI_CS_LOW_ON_ENTRY );
+	}
 
-	#elif ( fm25_CFG_ADDR_BIT_NUM <= 24 )
+	// Devices from 1Mbit to 4Mbit
+	// 17-bit - 19-bit addressing
+	#else
+	{
 		status = fm25_if_transmit((uint8_t*) &cmd.u, 4, eSPI_CS_LOW_ON_ENTRY );
-
+	}
 	#endif
 
 	return status;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/**
-*		Read WIP flag from device
-*
-* @return 		wip - State of Write-In-Progress
-*/
-////////////////////////////////////////////////////////////////////////////////
-static bool fm25_read_wip_flag(void)
-{
-	bool 					wip 		= false;
-	fm25_status_reg_t	stat_reg	= { .u = 0 };
-
-	if ( e25LCXXXX_OK == fm25_read_status( & stat_reg ))
-	{
-		wip = (bool) ( stat_reg.b.wip );
-	}
-
-	return wip;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -671,81 +549,14 @@ static bool fm25_read_wip_flag(void)
 static bool fm25_read_wel_flag(void)
 {
 	bool wel = false;
-	fm25_status_reg_t	stat_reg	= { .u = 0 };
+	fm25_status_reg_t stat_reg = { .u = 0 };
 
-	if ( e25LCXXXX_OK == fm25_read_status( & stat_reg ))
+	if ( eFM25_OK == fm25_read_status( & stat_reg ))
 	{
 		wel = (bool) ( stat_reg.b.wel );
 	}
 
 	return wel;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/**
-*		Wait for device to write to internal memory array
-*
-*	This function blocks for maximum time of timeout and continuously check
-*	for WIP flag every 1ms.
-*
-* @param[in]	timeout 	- Timeout in miliseconds
-* @return 		status 		- Status of operation
-*/
-////////////////////////////////////////////////////////////////////////////////
-static fm25_status_t fm25_wait_for_write_process(const uint32_t timeout)
-{
-	fm25_status_t 	status 		= e25LCXXXX_OK;
-	uint32_t			tick_prev	= 0UL;
-	uint32_t			tick		= 0UL;
-	uint32_t 			safe_cnt	= 1000000UL;
-	bool				wip_flag	= false;
-	uint8_t				timeout_cnt = 0U;
-
-	// Read WIP flag
-	wip_flag = fm25_read_wip_flag();
-
-	// Write is in progress - check for timeout amount of time
-	if ( true == wip_flag )
-	{
-		// Get current tick
-		tick = fm25_if_get_sys_time_ms();
-		tick_prev = tick;
-
-		// Continuously check for WIP
-		while ( safe_cnt > 0 )
-		{
-			// Get current timetick
-			tick = fm25_if_get_sys_time_ms();
-
-			// Read every 1ms
-			if ( (uint32_t) ( tick - tick_prev ) >= 1UL )
-			{
-				tick_prev = tick;
-				timeout_cnt++;
-
-				// Read WIP flag
-				wip_flag = fm25_read_wip_flag();
-
-				if ( false == wip_flag )
-				{
-					break;
-				}
-			}
-
-			if ( timeout_cnt >= timeout )
-			{
-				status = e25LCXXXX_ERROR;
-				break;
-			}
-
-			// Decrement safety counter
-			safe_cnt--;
-		}
-	}
-
-	FM25_ASSERT( safe_cnt > 0 );
-
-	return status;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
