@@ -3,9 +3,13 @@
 //============================================================
 
 Features/Changes:
+ - Implemented read, write to memory
+ - Implemented read, write status register
  
 Solved Issues:
 
 Known Issues:
 
-TODO: 
+TODO:
+ - Locking memory
+ - Reading device ID
