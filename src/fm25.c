@@ -110,13 +110,13 @@ fm25_status_t fm25_init(void)
 		{
 			gb_is_init = true;
 
-			FM25_DBG_PRINT("Init success!");
+			FM25_DBG_PRINT("FM25: Init success!");
 		}
 		else
 		{
 			status = eFM25_ERROR_INIT;
 
-			FM25_DBG_PRINT("Init error!");
+			FM25_DBG_PRINT("FM25: Init error!");
 		}
 	}
 
