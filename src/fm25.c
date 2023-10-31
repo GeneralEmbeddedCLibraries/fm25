@@ -21,6 +21,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////////////////
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+
 #include "fm25.h"
 #include "fm25_regdef.h"
 #include "../../fm25_if.h"
@@ -67,9 +71,13 @@ static bool gb_is_init = false;
 // Function Prototypes
 ////////////////////////////////////////////////////////////////////////////////
 static fm25_status_t 	fm25_write_enable 				(void);
-static fm25_status_t 	fm25_write_disable 				(void);
+
+// TODO: Unused func...
+//static fm25_status_t 	fm25_write_disable 				(void);
 static fm25_status_t 	fm25_read_status				(fm25_status_reg_t * const p_status_reg);
-static fm25_status_t 	fm25_write_status				(const fm25_status_reg_t * const p_status_reg);
+
+// TODO: Unused func...
+//static fm25_status_t 	fm25_write_status				(const fm25_status_reg_t * const p_status_reg);
 static fm25_status_t 	fm25_read_command				(const uint32_t addr);
 static fm25_status_t 	fm25_write_command				(const uint32_t addr);
 static void 			fm25_assemble_rw_cmd			(fm25_rw_cmd_t * const p_frame, const fm25_isa_t rw_cmd, const uint32_t addr);
@@ -303,6 +311,8 @@ static fm25_status_t fm25_write_enable(void)
 	return status;
 }
 
+// TODO: UNUSED FUNCTION!!!!
+#if 0
 ////////////////////////////////////////////////////////////////////////////////
 /**
 *		Disable write latch
@@ -319,6 +329,7 @@ static fm25_status_t fm25_write_disable(void)
 
 	return status;
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -339,6 +350,8 @@ static fm25_status_t fm25_read_status(fm25_status_reg_t * const p_status_reg)
 	return status;
 }
 
+// TODO: UNUSED FUNCTION!!!!
+#if 0
 ////////////////////////////////////////////////////////////////////////////////
 /**
 *		Write to device status register
@@ -357,6 +370,7 @@ static fm25_status_t fm25_write_status(const fm25_status_reg_t * const p_status_
 
 	return status;
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
