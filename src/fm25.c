@@ -96,11 +96,7 @@ static bool				fm25_read_wel_flag				(void);
 ////////////////////////////////////////////////////////////////////////////////
 fm25_status_t fm25_init(void)
 {
-	fm25_status_t 	status 		= eFM25_OK;
-	bool			wel_flag	= false;
-
-	// Check for init
-	FM25_ASSERT( false == gb_is_init );
+	fm25_status_t status = eFM25_OK;
 
 	if ( false == gb_is_init )
 	{
@@ -111,7 +107,7 @@ fm25_status_t fm25_init(void)
 		status |= fm25_write_enable();
 
 		// Read WEL flag
-		wel_flag = fm25_read_wel_flag();
+		const bool wel_flag = fm25_read_wel_flag();
 
 		if (	( eFM25_OK == status )
 			&& 	( true == wel_flag ))
@@ -129,6 +125,29 @@ fm25_status_t fm25_init(void)
 	}
 
 	return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+*       De-initialize FRAM device
+*
+* @return   status - Status of initialization
+*/
+////////////////////////////////////////////////////////////////////////////////
+fm25_status_t fm25_deinit(void)
+{
+    fm25_status_t status = eFM25_OK;
+
+    if ( true == gb_is_init )
+    {
+        // De-init interface layer
+        status = fm25_if_deinit();
+
+        // De-init
+        gb_is_init = false;
+    }
+
+    return status;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

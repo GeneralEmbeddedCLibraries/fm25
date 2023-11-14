@@ -24,9 +24,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////////////////
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+
 #include "fm25_if.h"
 
 // USER INCLUDES BEGIN...
+
+#include "drivers/peripheral/spi/spi.h"
 
 // USER INCLUDES END...
 
@@ -73,6 +79,28 @@ fm25_status_t fm25_if_init(void)
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
+*       De-Initialize low level interface
+*
+* @note User shall provide definition of that function based on used platform!
+*
+* @return       status - Status of initialization
+*/
+////////////////////////////////////////////////////////////////////////////////
+fm25_status_t fm25_if_deinit(void)
+{
+    fm25_status_t status = eFM25_OK;
+
+    // USER CODE BEGIN...
+
+    // No actions...
+
+    // USER CODE END...
+
+    return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
 *		Write bytes via SPI to device
 *
 * @note	User shall provide definition of that function based on used platform!
@@ -88,7 +116,7 @@ fm25_status_t fm25_if_transmit(const uint8_t * p_data, const uint32_t size, cons
 
 	// USER CODE BEGIN...
 
-	if ( eSPI_OK != spi_2_transmit( eSPI2_CH_FRAM, (uint8_t*) p_data, size, cs_action ))
+	if ( eSPI_OK != spi_4_transmit( eSPI4_CH_FRAM, (uint8_t*) p_data, size, cs_action ))
 	{
 		status = eFM25_ERROR_SPI;
 	}
@@ -115,7 +143,7 @@ fm25_status_t fm25_if_receive(uint8_t * p_data, const uint32_t size, const spi_c
 
 	// USER CODE BEGIN...
 
-	if ( eSPI_OK != spi_2_receive( eSPI2_CH_FRAM, p_data, size, cs_action ))
+	if ( eSPI_OK != spi_4_receive( eSPI4_CH_FRAM, p_data, size, cs_action ))
 	{
 		status = eFM25_ERROR_SPI;
 	}
