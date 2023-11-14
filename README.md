@@ -27,6 +27,7 @@ NOTICE: Change value of *FM25_CFG_ADDR_BIT_NUM* accordingly to used FRAM device 
 Interface functions needs to be provided inside ***fm25_if.c/.h***:
 ```C
 fm25_status_t 	fm25_if_init		(void);
+fm25_status_t 	fm25_if_deinit		(void);
 fm25_status_t 	fm25_if_transmit	(const uint8_t * p_data, const uint32_t size, const spi_cs_action_t cs_action);
 fm25_status_t 	fm25_if_receive		(uint8_t * p_data, const uint32_t size, const spi_cs_action_t cs_action);
 ```
@@ -63,7 +64,7 @@ root/drivers/devices/fm25/fm25/"module_space"
 | **FM25_DBG_PRINT** 			    | Debug print definition |
 | **FM25_ASSERT** 			        | Assert definition |
 
-3. Prepare interface files *fm25_if.c* and *fm25_if.h*. All examples are inside *template* folder.
+3. Provide SPI low level interface inside *fm25_if.c* and *fm25_if.h* files. Example is inside *template* folder.
 
 4. Initilize FM25 FRAM:
 ```C
