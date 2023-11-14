@@ -426,6 +426,10 @@ fm25_status_t fm25_is_init(bool * const p_is_init)
     {
         *p_is_init = gb_is_init;
     }
+    else
+    {
+        status = eFM25_ERROR;
+    }
 
     return status;
 }
@@ -492,7 +496,7 @@ fm25_status_t fm25_erase(const uint32_t addr, const uint32_t size)
         if ( size < 256U )
         {
             // Prepare erase data
-            for ( uint8_t i = 0U; i < 256U; i++ )
+            for ( uint32_t i = 0U; i < 256U; i++ )
             {
                 erase_data[i] = FM25_ERASE_VALUE;
             }
