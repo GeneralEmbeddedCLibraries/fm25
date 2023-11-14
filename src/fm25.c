@@ -57,7 +57,7 @@ typedef union
         uint8_t addr[3];    /**<Address part of frame */
     } field;
     uint32_t u;             /**<Unsigned access */
-}fm25_rw_cmd_t;
+} fm25_rw_cmd_t;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Variables
