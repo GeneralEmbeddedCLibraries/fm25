@@ -9,13 +9,14 @@ Driver support whole FM25xxxxx device family if correctly configurable. Driver i
 ## **Driver Configuration**
 
 Based on following table, configuration of the driver shall be made:
-![](pic/../doc/pic/device_family_table.png)
+![](pic/../doc/pic/device_family_table.jpg)
 
 NOTICE: Change value of *FM25_CFG_ADDR_BIT_NUM* accordingly to used FRAM device inside *fm25_dfg.h*:
 ```C
 /**
  *  Device number address bits
  *
+ * @note    Look at the "Number of address bits" on p. 4 inside datasheet!
  */
 #define FM25_CFG_ADDR_BIT_NUM           ( 9 )
 ```
