@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Ziga Miklosic
+// Copyright (c) 2023 Ziga Miklosic
 // All Rights Reserved
 // This software is under MIT licence (https://opensource.org/licenses/MIT)
 ////////////////////////////////////////////////////////////////////////////////
@@ -6,8 +6,9 @@
 *@file      fm25_if.c
 *@brief     Application interface for FM25 FRAM device
 *@author    Ziga Miklosic
-*@date      02.08.2022
-*@version	V1.0.0
+*@email     ziga.miklosic@gmail.com
+*@date      14.11.2023
+*@version   V1.0.0
 */
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -15,8 +16,8 @@
 * @{ <!-- BEGIN GROUP -->
 *
 *
-* 	Put code that is platform depended inside code block start with
-* 	"USER_CODE_BEGIN" and with end of "USER_CODE_END".
+*     Put code that is platform depended inside code block start with
+*     "USER_CODE_BEGIN" and with end of "USER_CODE_END".
 *
 */
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,27 +55,27 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-*		Initialize low level interface
+*        Initialize low level interface
 *
-* @note	User shall provide definition of that function based on used platform!
+* @note    User shall provide definition of that function based on used platform!
 *
-* @return 		status - Status of initialization
+* @return   status - Status of initialization
 */
 ////////////////////////////////////////////////////////////////////////////////
 fm25_status_t fm25_if_init(void)
 {
-	fm25_status_t status = eFM25_OK;
+    fm25_status_t status = eFM25_OK;
 
-	// USER CODE BEGIN...
+    // USER CODE BEGIN...
 
-	if ( eSPI_OK != spi_init())
-	{
-		status = eFM25_ERROR_INIT;
-	}
+    if ( eSPI_OK != spi_init())
+    {
+        status = eFM25_ERROR_INIT;
+    }
 
-	// USER CODE END...
+    // USER CODE END...
 
-	return status;
+    return status;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -83,7 +84,7 @@ fm25_status_t fm25_if_init(void)
 *
 * @note User shall provide definition of that function based on used platform!
 *
-* @return       status - Status of initialization
+* @return   status - Status of initialization
 */
 ////////////////////////////////////////////////////////////////////////////////
 fm25_status_t fm25_if_deinit(void)
@@ -101,56 +102,56 @@ fm25_status_t fm25_if_deinit(void)
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-*		Write bytes via SPI to device
+*        Write bytes via SPI to device
 *
-* @note	User shall provide definition of that function based on used platform!
+* @note    User shall provide definition of that function based on used platform!
 *
-* @param[in] 	p_data		- Pointer to transmit data
-* @param[in] 	size		- Size of transmit data
-* @return 		status 		- Status of operation
+* @param[in]    p_data  - Pointer to transmit data
+* @param[in]    size    - Size of transmit data
+* @return       status  - Status of operation
 */
 ////////////////////////////////////////////////////////////////////////////////
 fm25_status_t fm25_if_transmit(const uint8_t * p_data, const uint32_t size, const spi_cs_action_t cs_action)
 {
-	fm25_status_t status = eFM25_OK;
+    fm25_status_t status = eFM25_OK;
 
-	// USER CODE BEGIN...
+    // USER CODE BEGIN...
 
-	if ( eSPI_OK != spi_4_transmit( eSPI4_CH_FRAM, (uint8_t*) p_data, size, cs_action ))
-	{
-		status = eFM25_ERROR_SPI;
-	}
+    if ( eSPI_OK != spi_4_transmit( eSPI4_CH_FRAM, (uint8_t*) p_data, size, cs_action ))
+    {
+        status = eFM25_ERROR_SPI;
+    }
 
-	// USER CODE END...
+    // USER CODE END...
 
-	return status;
+    return status;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-*		Read bytes via SPI from device
+*        Read bytes via SPI from device
 *
-* @note	User shall provide definition of that function based on used platform!
+* @note    User shall provide definition of that function based on used platform!
 *
-* @param[in] 	p_data		- Pointer to receive data
-* @param[in] 	size		- Size of received data
-* @return 		status 		- Status of operation
+* @param[in]    p_data  - Pointer to receive data
+* @param[in]    size    - Size of received data
+* @return       status  - Status of operation
 */
 ////////////////////////////////////////////////////////////////////////////////
 fm25_status_t fm25_if_receive(uint8_t * p_data, const uint32_t size, const spi_cs_action_t cs_action)
 {
-	fm25_status_t status = eFM25_OK;
+    fm25_status_t status = eFM25_OK;
 
-	// USER CODE BEGIN...
+    // USER CODE BEGIN...
 
-	if ( eSPI_OK != spi_4_receive( eSPI4_CH_FRAM, p_data, size, cs_action ))
-	{
-		status = eFM25_ERROR_SPI;
-	}
+    if ( eSPI_OK != spi_4_receive( eSPI4_CH_FRAM, p_data, size, cs_action ))
+    {
+        status = eFM25_ERROR_SPI;
+    }
 
-	// USER CODE END...
+    // USER CODE END...
 
-	return status;
+    return status;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
