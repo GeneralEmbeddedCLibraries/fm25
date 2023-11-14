@@ -79,7 +79,7 @@ static fm25_status_t    fm25_write_command      (const uint32_t addr);
 static void             fm25_assemble_rw_cmd    (fm25_rw_cmd_t * const p_frame, const fm25_isa_t rw_cmd, const uint32_t addr);
 static bool             fm25_read_wel_flag      (void);
 
-// TODO: Unused func...
+// NOTE: Unused function for now. Leave for as it might be useful in future!
 //static fm25_status_t  fm25_write_status       (const fm25_status_reg_t * const p_status_reg);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -307,7 +307,7 @@ static bool fm25_read_wel_flag(void)
     return wel;
 }
 
-// TODO: UNUSED FUNCTION!!!!
+// NOTE: Unused function for now. Leave for as it might be useful in future!
 #if 0
 ////////////////////////////////////////////////////////////////////////////////
 /**
